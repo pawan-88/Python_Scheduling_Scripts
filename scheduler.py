@@ -1,56 +1,57 @@
 # This is Python Small script to scheadule a few APIs calls.
-
-import requests
 import datetime
 import time
 import threading
 import logging
-from typing import List
+import requests
+
 
 url = "https://ifconfig.co/"
 
 # Basic loggegr setup – good enousgh for this smsall scripts.
 logging.basicConfig(
     filename='Log.txt',
-    level=logging.DEBUG,
-    format='%(name)s: %(levelname)s - %(message)s - %(asctime)s.'
+    level=logging.INFO,
+    format="%(message)s",
+    force=True
 )
 
 logger = logging.getLogger('Test')
 
 
-#  Converts "HH:MM:SS" into a datetimes object.
+#  Converts "HH:MM:SS" into datetimes object.
 def Formatting_Time(time_str: str) -> datetime.datetime:
-    return datetime.datetime.strptime(time_str, "%H:%M:%S")
-
+    today = datetime.datetime.now().date()
+    t = datetime.datetime.strptime(time_str, "%H:%M:%S").time()
+    return datetime.datetime.combine(today, t)
 
 # Waitz until the given time string and then call the API once.
 def Hitting_url(time_stamp):
-    while True:
-        now_str = datetime.datetime.now().strftime("%H:%M:%S")
-        delay = (Formatting_Time(time_stamp) - Formatting_Time(now_str)).total_seconds()
-        
-        if delay <= 0:
-            logger.info(f"Reached scheduled time, delay: {delay}")
-            break
+    target_time = Formatting_Time(time_stamp)
 
-        time.sleep(min(delay, 1))
-    
+    delay = (target_time - datetime.datetime.now()).total_seconds()
+
+    if delay > 0:
+        time.sleep(delay)
+
+    # Log immediately when scheduled time is reached
+    hit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_time = target_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    #logger.info(f"Hitting API at scheduled time {log_time}, actual time {hit_time}")
+
     try:
-        logger.info("Time to hit the URL.")
         res = requests.get(url)
 
-        current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        
         if res.status_code == 200:
-            print(f'Successful hit at {current_time}')
-            logger.info("Success in hitting the URL")
+            print(f"Successful hit at {hit_time}")
+            logger.info(f"{log_time} Success in hitting the URL {url}")
         else:
-            print(f"Unsuccessful in performing task at {current_time}")
-            logger.warning(f"Status code issue. Status code: {res.status_code}")
-    except Exception as e: # generic for catch original exception
-        print("Exception occurred:", e)
-        logger.error(f"Error whiles calling sthe API: {e}")
+            print(f"Unsuccessful hit at {hit_time}")
+            logger.warning(f"Status code issue: {res.status_code}")
+
+    except Exception as e:
+        logger.error(f"Error while calling API: {e}")
 
 def main():
     user_input = input("Enter the timestamps (comma separated, HH:MM:SS): ")

@@ -2,7 +2,7 @@
 
 This script to hit ifconfig.co at specific times. Uses threads if you have duplicate timestamps.
 
-## Run it
+## Run using this command:-
 - python main.py
 
 Then just add timestamps into this below format-
@@ -20,3 +20,6 @@ Hitting_Url - this function helps to call the api and print actual statements.
 main - this used for call main file.
 
 ## used Python 3.13 or whatever version you got
+=======
+# Python_Scheduling_Scripts
+This script to hit ifconfig.co at specific times. Uses threads if you have duplicate timestamps.
